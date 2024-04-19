@@ -18,9 +18,18 @@
 //   the first element is the string, the second one is the command.
 // - The output element is going to be a Vector of strings.
 //
+/*
+    让我们建立一个函数形式的小机器。作为输入，我们将给出一个字符串和命令列表。
+    这些命令决定将对字符串应用什么操作。它可以是:
+    -将字符串大写
+    -修剪字符串
+    -将"bar"添加到字符串的指定次数，其确切形式为:
+    -输入将是一个2长度元组的Vector，第一个元素是字符串，第二个是命令。
+    -输出元素将是一个Vector类型的字符串。
+ */
 // No hints this time!
 
-// I AM NOT DONE
+
 
 pub enum Command {
     Uppercase,
@@ -32,11 +41,22 @@ mod my_module {
     use super::Command;
 
     // TODO: Complete the function signature!
-    pub fn transformer(input: ???) -> ??? {
+    pub fn transformer(input: Vec<(String,Command)>) -> Vec<String> {
         // TODO: Complete the output declaration!
-        let mut output: ??? = vec![];
+
+        let mut output: Vec<String> = vec![];
         for (string, command) in input.iter() {
             // TODO: Complete the function body. You can do it!
+
+            let transformed = match command {
+                Command::Uppercase => string.to_uppercase(), // 转换为大写
+                Command::Trim => string.trim().to_string(), // 去除首尾空白
+                Command::Append(times) => {
+                    let append_str = "bar".repeat(*times); // 重复"bar"指定次数
+                    string.to_string() + &append_str // 拼接字符串
+                },
+            };
+            output.push(transformed);
         }
         output
     }
@@ -45,7 +65,7 @@ mod my_module {
 #[cfg(test)]
 mod tests {
     // TODO: What do we need to import to have `transformer` in scope?
-    use ???;
+    use super::my_module::transformer;
     use super::Command;
 
     #[test]
