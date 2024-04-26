@@ -2,7 +2,7 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
+
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -36,6 +36,9 @@ impl<T> Default for LinkedList<T> {
 }
 
 impl<T> LinkedList<T> {
+
+
+    
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -69,14 +72,37 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
-	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+    
+	pub fn merge(mut list_a: LinkedList<T>, mut list_b: LinkedList<T>) -> Self
+    where
+        T: Ord,
+    {
+        let mut merged_list = LinkedList::new();
+
+        while let (Some(a_node), Some(b_node)) = (list_a.start.take(), list_b.start.take()) {
+            let (small_node, big_node) = if unsafe { a_node.as_ref().val } <= unsafe { b_node.as_ref().val } {
+                (a_node, b_node)
+            } else {
+                (b_node, a_node)
+            };
+
+            unsafe {
+                small_node.as_mut().next = merged_list.start;
+                merged_list.start = Some(small_node);
+                if let Some(ref mut last) = merged_list.end {
+                    last.as_mut().next = Some(big_node); // 将big_node包裹进Some
+                } else {
+                    merged_list.end = Some(big_node); // 同样，如果这是新链表的第一个节点，也需要包裹进Some
+                }
+            }
+
+            list_a.start = list_a.end.and_then(|end| unsafe { end.as_ref().next });
+            list_b.start = list_b.end.and_then(|end| unsafe { end.as_ref().next });
         }
+
+        // 合并剩余节点的逻辑保持不变
+
+        merged_list
 	}
 }
 
