@@ -5,8 +5,17 @@
 */
 
 
-fn sort<T>(array: &mut [T]){
-	//TODO
+fn sort<T>(array: &mut [T])
+where
+    T: Ord, // 要求T实现了Ord特性，这样才能进行比较
+{
+    for i in 1..array.len() {
+        let mut j = i;
+        while j > 0 && array[j - 1] > array[j] {
+            array.swap(j - 1, j); // 交换两个元素
+            j -= 1;
+        }
+    }
 }
 #[cfg(test)]
 mod tests {

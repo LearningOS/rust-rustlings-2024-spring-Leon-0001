@@ -35,10 +35,9 @@ impl<T> Default for LinkedList<T> {
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T: Clone + PartialOrd> LinkedList<T> {
 
-
-    
+   
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -73,38 +72,56 @@ impl<T> LinkedList<T> {
         }
     }
     
-	pub fn merge(mut list_a: LinkedList<T>, mut list_b: LinkedList<T>) -> Self
-    where
-        T: Ord,
-    {
-        let mut merged_list = LinkedList::new();
 
-        while let (Some(a_node), Some(b_node)) = (list_a.start.take(), list_b.start.take()) {
-            let (small_node, big_node) = if unsafe { a_node.as_ref().val } <= unsafe { b_node.as_ref().val } {
-                (a_node, b_node)
+    // 辅助函数用于创建一个空链表实例
+    fn init_empty_list() -> Self {
+        LinkedList {
+            length: 0,
+            start: None,
+            end: None,
+        }
+    }
+
+    pub fn merge(mut list_a: Self, mut list_b: Self) -> Self {
+        let mut merged_list = Self::init_empty_list(); // 使用辅助函数初始化新链表
+
+        let mut a = list_a.start;
+        let mut b = list_b.start;
+
+        while let (Some(a_ptr), Some(b_ptr)) = (a, b) {
+            let a_val = unsafe { &(*a_ptr.as_ptr()).val }.clone(); // 使用 clone 转换为 T
+            let b_val = unsafe { &(*b_ptr.as_ptr()).val }.clone(); // 使用 clone 转换为 T
+
+            if a_val < b_val {
+                merged_list.add(a_val.clone());
+                a = unsafe { (*a_ptr.as_ptr()).next };
+            } else if a_val > b_val {
+                merged_list.add(b_val.clone());
+                b = unsafe { (*b_ptr.as_ptr()).next };
             } else {
-                (b_node, a_node)
-            };
-
-            unsafe {
-                small_node.as_mut().next = merged_list.start;
-                merged_list.start = Some(small_node);
-                if let Some(ref mut last) = merged_list.end {
-                    last.as_mut().next = Some(big_node); // 将big_node包裹进Some
-                } else {
-                    merged_list.end = Some(big_node); // 同样，如果这是新链表的第一个节点，也需要包裹进Some
-                }
+                // If equal, add both and move both pointers
+                merged_list.add(a_val.clone());
+                merged_list.add(b_val.clone());
+                a = unsafe { (*a_ptr.as_ptr()).next };
+                b = unsafe { (*b_ptr.as_ptr()).next };
             }
-
-            list_a.start = list_a.end.and_then(|end| unsafe { end.as_ref().next });
-            list_b.start = list_b.end.and_then(|end| unsafe { end.as_ref().next });
         }
 
-        // 合并剩余节点的逻辑保持不变
+        // Append the remaining nodes from either list_a or list_b
+        while let Some(a_ptr) = a {
+            merged_list.add(unsafe { (*a_ptr.as_ptr()).val.clone() });
+            a = unsafe { (*a_ptr.as_ptr()).next };
+        }
+
+        while let Some(b_ptr) = b {
+            merged_list.add(unsafe { (*b_ptr.as_ptr()).val.clone() });
+            b = unsafe { (*b_ptr.as_ptr()).next };
+        }
 
         merged_list
-	}
+    }
 }
+
 
 impl<T> Display for LinkedList<T>
 where
