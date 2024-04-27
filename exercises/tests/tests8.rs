@@ -9,11 +9,18 @@
 
 
 
+fn main() {}
+
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
-    fn you_can_assert() {
-        assert!(true);
+    fn test_success() {
+        #[cfg(feature = "pass")]
+        return;
+
+        panic!("no cfg set");
     }
 }
  
